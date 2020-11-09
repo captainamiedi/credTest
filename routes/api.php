@@ -30,7 +30,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
         Route::post('register', 'Auth\RegisterController@create');
         Route::post('login', 'Auth\RegisterController@login');
         Route::get('referer', 'Auth\RegisterController@checkReferral');
-//        Route::post('transfer', 'walletController@transfer');
     });
 
     Route::group(['middleware' => 'auth:api'], function () {

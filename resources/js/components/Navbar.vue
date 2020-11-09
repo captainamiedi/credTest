@@ -19,13 +19,13 @@
         name: "Navbar",
         props: {
             login: {
-                type: Boolean
+                type: String
             },
             signup: {
-                type: Boolean
+                type: String
             },
             isLogin : {
-                type: Boolean
+                type: String
             }
         },
         methods: {

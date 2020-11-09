@@ -109,7 +109,7 @@ class RegisterController extends Controller
             return \response()->json(['error' => 'user does not exist'], 409);
         }
         if (!Hash::check(request()->password, $user->password)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Password is not correct'], 401);
         }
 
         $token = $user->createToken('my-app')->accessToken;

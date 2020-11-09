@@ -151,13 +151,19 @@ class walletController extends Controller
             }
         } else {
             if ($request->withdraw_amount < 50000) {
-                if ($request->withdraw_amount < $account->amount) {
+                if ($request->withdraw_amount < $wallet->balance) {
                     if (Hash::check($request->pin, $account->pin)) {
                         Wallet::create([
                             'user_id' =>  $receiverAcct->user_id,
-                            'amount' => $wallet->amount,
-                            'balance' => $wallet->amount - $request->withdraw_amount,
+                            'amount' => $receiverWallet->balance + $request->withdraw_amount,
+                            'balance' => $receiverWallet->balance + $request->withdraw_amount,
                             'account_id' => $receiverAcct->id,
+                        ]);
+                        Wallet::create([
+                            'user_id' =>  $request->user()->id,
+                            'amount' => $wallet->balance - $request->withdraw_amount,
+                            'balance' => $wallet->balance - $request->withdraw_amount,
+                            'account_id' => $account->id,
                         ]);
                     } else {
 //                    wrong password
@@ -174,7 +180,7 @@ class walletController extends Controller
             } else {
 //                not permitted
                 return response()->json([
-                    'message' => 'not permited'
+                    'message' => 'not permitted'
                 ], 403);
             }
         }

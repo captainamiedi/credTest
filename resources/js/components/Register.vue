@@ -3,6 +3,9 @@
         <Navbar signup="true" />
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <div class="" v-if="error">
+                    <p class="text-danger">{{error}}</p>
+                </div>
                 <div class="card">
                     <div class="card-body">
                         <form autocomplete="off" @submit.prevent="submit">
@@ -59,7 +62,7 @@
                     password: '',
                     ref: ''
                 },
-                success: false
+                error: '',
             }
         },
         methods: {
@@ -67,17 +70,29 @@
                 console.log(this.form)
                 let refer = JSON.parse(localStorage.getItem('refer'));
                 this.form.ref = refer;
-                axios.post('http://localhost:8000/api/auth/register', this.form).then(res => {
-                    // console.log(res)
-                    const {data, status} = res;
-                    if(status === 201) {
-                        localStorage.setItem("user-token", JSON.stringify(data.token));
-                        localStorage.removeItem('refer')
-                        this.$router.push('/dashboard')
-                    }
-                }).catch((err) => {
-                    console.log(err)
-                })
+                if (!this.form.email) {
+                    this.error.push('Email is required')
+                }
+                if (!this.form.password){
+                    this.error.push('Password id required')
+                }
+                if (!this.form.name){
+                    this.error.push('name id required')
+                }
+                if (this.form.name && this.form.password && this.form.email) {
+                    axios.post('http://localhost:8000/api/auth/register', this.form).then(res => {
+                        // console.log(res)
+                        const {data, status} = res;
+                        if (status === 201) {
+                            localStorage.setItem("user-token", JSON.stringify(data.token));
+                            localStorage.removeItem('refer')
+                            this.$router.push('/dashboard')
+                        }
+                    }).catch((err) => {
+                        console.log(err)
+                        this.error = err.response.data.message;
+                    })
+                }
             }
         }
     }

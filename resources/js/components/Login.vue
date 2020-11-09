@@ -3,6 +3,9 @@
         <Navbar login="true" />
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <div class="" v-if="error">
+                    <p class="text-danger">{{error}}</p>
+                </div>
                 <div class="card">
                     <div class="card-body">
                         <form autocomplete="off" @submit.prevent="submit">
@@ -50,21 +53,32 @@
                     email: '',
                     password: ''
                 },
+                error: ''
             }
         },
         methods: {
             submit() {
                 console.log(this.form)
-                axios.post('http://localhost:8000/api/auth/login', this.form).then(res => {
-                    console.log(res)
-                    const {data, status} = res;
-                    if(status === 200) {
-                        localStorage.setItem("user-token", JSON.stringify(data.token));
-                        this.$router.push('/dashboard')
-                    }
-                }).catch((err) => {
-                    console.log(err)
-                })
+                if (!this.form.email) {
+                    this.error.push('Email is required')
+                }
+                if (!this.form.password){
+                    this.error.push('Password id required')
+                }
+                if (this.form.email && this.form.password) {
+                    axios.post('http://localhost:8000/api/auth/login', this.form).then(res => {
+                        console.log(res)
+                        const {data, status} = res;
+                        if (status === 200) {
+                            localStorage.setItem("user-token", JSON.stringify(data.token));
+                            this.$router.push('/dashboard')
+                        }
+                    }).catch((err) => {
+                        console.log(err.response.data.error)
+
+                        this.error = err.response.data.error;
+                    })
+                }
             }
         }
     }

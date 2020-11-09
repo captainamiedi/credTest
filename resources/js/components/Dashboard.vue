@@ -87,8 +87,14 @@
         },
         methods: {
             balance() {
-                // window.location.reload(true);
-                axios.get('/api/wallet/balance').then(res => {
+                // this is a temporary fix because of time
+                let token = JSON.parse(localStorage.getItem("user-token"));
+                let config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+                axios.get('/api/wallet/balance', config).then(res => {
                     console.log(res.data[0][0])
                     this.walletBalance = res.data[0]
                 }).catch(err => {
@@ -96,7 +102,14 @@
                 })
             },
             accountDetails() {
-                axios.get('/api/account').then(res => {
+                // this is a temporary fix because of time
+                let token = JSON.parse(localStorage.getItem("user-token"));
+                let config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+                axios.get('/api/account', config).then(res => {
                     console.log(res.data[0])
                     this.acct = res.data[0];
                 }).catch(err => {
@@ -107,17 +120,32 @@
                 this.openModal = !this.openModal;
             },
             transferFund() {
-                axios.post('/api/transfer', this.form).then(res => {
-                    console.log(res.data)
-                    this.balance();
-                    this.accountDetails()
-                }).catch(err => {
-                    // console.log(err)
-                    this.error = err.response.data.message;
-                    console.log(err.response.data.message);
-                    console.log(err.response.status);
-                    console.log(err.response.headers);
-                })
+                if (!this.form.receiver_account) {
+                    this.error = 'Receiver Account Number is required'
+                }
+                if (!this.form.pin){
+                    this.error = 'Pin is required'
+                }
+                if (!this.form.withdraw_amount){
+                    this.error = 'Amount to withdraw is required'
+                }
+                if (this.form.withdraw_amount && this.form.pin && this.form.receiver_account) {
+                    // this is a temporary fix because of time
+                    let token = JSON.parse(localStorage.getItem("user-token"));
+                    let config = {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        }
+                    }
+                    axios.post('/api/transfer', this.form, config).then(res => {
+                        console.log(res.data)
+                        this.balance();
+                        this.accountDetails()
+                    }).catch(err => {
+                        // console.log(err)
+                        this.error = err.response.data.message;
+                    })
+                }
             }
         },
         created() {

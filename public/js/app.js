@@ -3032,8 +3032,14 @@ __webpack_require__.r(__webpack_exports__);
     balance: function balance() {
       var _this = this;
 
-      // window.location.reload(true);
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/api/wallet/balance').then(function (res) {
+      // this is a temporary fix because of time
+      var token = JSON.parse(localStorage.getItem("user-token"));
+      var config = {
+        headers: {
+          Authorization: "Bearer ".concat(token)
+        }
+      };
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/api/wallet/balance', config).then(function (res) {
         console.log(res.data[0][0]);
         _this.walletBalance = res.data[0];
       })["catch"](function (err) {
@@ -3043,7 +3049,14 @@ __webpack_require__.r(__webpack_exports__);
     accountDetails: function accountDetails() {
       var _this2 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/api/account').then(function (res) {
+      // this is a temporary fix because of time
+      var token = JSON.parse(localStorage.getItem("user-token"));
+      var config = {
+        headers: {
+          Authorization: "Bearer ".concat(token)
+        }
+      };
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/api/account', config).then(function (res) {
         console.log(res.data[0]);
         _this2.acct = res.data[0];
       })["catch"](function (err) {
@@ -3056,19 +3069,37 @@ __webpack_require__.r(__webpack_exports__);
     transferFund: function transferFund() {
       var _this3 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/api/transfer', this.form).then(function (res) {
-        console.log(res.data);
+      if (!this.form.receiver_account) {
+        this.error = 'Receiver Account Number is required';
+      }
 
-        _this3.balance();
+      if (!this.form.pin) {
+        this.error = 'Pin is required';
+      }
 
-        _this3.accountDetails();
-      })["catch"](function (err) {
-        // console.log(err)
-        _this3.error = err.response.data.message;
-        console.log(err.response.data.message);
-        console.log(err.response.status);
-        console.log(err.response.headers);
-      });
+      if (!this.form.withdraw_amount) {
+        this.error = 'Amount to withdraw is required';
+      }
+
+      if (this.form.withdraw_amount && this.form.pin && this.form.receiver_account) {
+        // this is a temporary fix because of time
+        var token = JSON.parse(localStorage.getItem("user-token"));
+        var config = {
+          headers: {
+            Authorization: "Bearer ".concat(token)
+          }
+        };
+        axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/api/transfer', this.form, config).then(function (res) {
+          console.log(res.data);
+
+          _this3.balance();
+
+          _this3.accountDetails();
+        })["catch"](function (err) {
+          // console.log(err)
+          _this3.error = err.response.data.message;
+        });
+      }
     }
   },
   created: function created() {
@@ -3088,12 +3119,40 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _Navbar__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Navbar */ "./resources/js/components/Navbar.vue");
 //
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 /* harmony default export */ __webpack_exports__["default"] = ({
-  name: "Home"
+  name: "Home",
+  components: {
+    Navbar: _Navbar__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
+  component: {
+    Navbar: _Navbar__WEBPACK_IMPORTED_MODULE_0__["default"]
+  }
 });
 
 /***/ }),
@@ -3147,6 +3206,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -3162,7 +3224,8 @@ __webpack_require__.r(__webpack_exports__);
       form: {
         email: '',
         password: ''
-      }
+      },
+      error: ''
     };
   },
   methods: {
@@ -3170,19 +3233,31 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       console.log(this.form);
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('http://localhost:8000/api/auth/login', this.form).then(function (res) {
-        console.log(res);
-        var data = res.data,
-            status = res.status;
 
-        if (status === 200) {
-          localStorage.setItem("user-token", JSON.stringify(data.token));
+      if (!this.form.email) {
+        this.error.push('Email is required');
+      }
 
-          _this.$router.push('/dashboard');
-        }
-      })["catch"](function (err) {
-        console.log(err);
-      });
+      if (!this.form.password) {
+        this.error.push('Password id required');
+      }
+
+      if (this.form.email && this.form.password) {
+        axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('http://localhost:8000/api/auth/login', this.form).then(function (res) {
+          console.log(res);
+          var data = res.data,
+              status = res.status;
+
+          if (status === 200) {
+            localStorage.setItem("user-token", JSON.stringify(data.token));
+
+            _this.$router.push('/dashboard');
+          }
+        })["catch"](function (err) {
+          console.log(err.response.data.error);
+          _this.error = err.response.data.error;
+        });
+      }
     }
   }
 });
@@ -3218,13 +3293,13 @@ __webpack_require__.r(__webpack_exports__);
   name: "Navbar",
   props: {
     login: {
-      type: Boolean
+      type: String
     },
     signup: {
-      type: Boolean
+      type: String
     },
     isLogin: {
-      type: Boolean
+      type: String
     }
   },
   methods: {
@@ -3324,6 +3399,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -3342,7 +3420,7 @@ __webpack_require__.r(__webpack_exports__);
         password: '',
         ref: ''
       },
-      success: false
+      error: ''
     };
   },
   methods: {
@@ -3352,20 +3430,36 @@ __webpack_require__.r(__webpack_exports__);
       console.log(this.form);
       var refer = JSON.parse(localStorage.getItem('refer'));
       this.form.ref = refer;
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('http://localhost:8000/api/auth/register', this.form).then(function (res) {
-        // console.log(res)
-        var data = res.data,
-            status = res.status;
 
-        if (status === 201) {
-          localStorage.setItem("user-token", JSON.stringify(data.token));
-          localStorage.removeItem('refer');
+      if (!this.form.email) {
+        this.error.push('Email is required');
+      }
 
-          _this.$router.push('/dashboard');
-        }
-      })["catch"](function (err) {
-        console.log(err);
-      });
+      if (!this.form.password) {
+        this.error.push('Password id required');
+      }
+
+      if (!this.form.name) {
+        this.error.push('name id required');
+      }
+
+      if (this.form.name && this.form.password && this.form.email) {
+        axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('http://localhost:8000/api/auth/register', this.form).then(function (res) {
+          // console.log(res)
+          var data = res.data,
+              status = res.status;
+
+          if (status === 201) {
+            localStorage.setItem("user-token", JSON.stringify(data.token));
+            localStorage.removeItem('refer');
+
+            _this.$router.push('/dashboard');
+          }
+        })["catch"](function (err) {
+          console.log(err);
+          _this.error = err.response.data.message;
+        });
+      }
     }
   }
 });
@@ -40516,9 +40610,52 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("p", [_vm._v("this is home")])
+  return _c(
+    "div",
+    [
+      _c("Navbar", { attrs: { login: "true", signup: "true" } }),
+      _vm._v(" "),
+      _c("h2", { staticClass: "d-flex justify-content-center mt-2" }, [
+        _vm._v("Welcome to my home page")
+      ]),
+      _vm._v(" "),
+      _vm._m(0),
+      _vm._v(" "),
+      _c("div", { staticClass: "m-3" }, [
+        _c(
+          "ul",
+          {
+            staticClass:
+              "list-group list-group-horizontal d-flex justify-content-center mt-2"
+          },
+          [
+            _c("router-link", { attrs: { to: "/login" } }, [
+              _c("li", { staticClass: "list-group-item" }, [_vm._v("Login")])
+            ]),
+            _vm._v(" "),
+            _c("router-link", { attrs: { to: "/register" } }, [
+              _c("li", { staticClass: "list-group-item" }, [_vm._v("Register")])
+            ])
+          ],
+          1
+        )
+      ])
+    ],
+    1
+  )
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "m-4" }, [
+      _c("h4", { staticClass: "d-flex justify-content-center mt-2" }, [
+        _vm._v("\n            This is a Technical Assessment\n        ")
+      ])
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -40548,6 +40685,14 @@ var render = function() {
       _vm._v(" "),
       _c("div", { staticClass: "row justify-content-center" }, [
         _c("div", { staticClass: "col-md-8" }, [
+          _vm.error
+            ? _c("div", {}, [
+                _c("p", { staticClass: "text-danger" }, [
+                  _vm._v(_vm._s(_vm.error))
+                ])
+              ])
+            : _vm._e(),
+          _vm._v(" "),
           _c("div", { staticClass: "card" }, [
             _c("div", { staticClass: "card-body" }, [
               _c(
@@ -40793,6 +40938,14 @@ var render = function() {
       _vm._v(" "),
       _c("div", { staticClass: "row justify-content-center" }, [
         _c("div", { staticClass: "col-md-8" }, [
+          _vm.error
+            ? _c("div", {}, [
+                _c("p", { staticClass: "text-danger" }, [
+                  _vm._v(_vm._s(_vm.error))
+                ])
+              ])
+            : _vm._e(),
+          _vm._v(" "),
           _c("div", { staticClass: "card" }, [
             _c("div", { staticClass: "card-body" }, [
               _c(
